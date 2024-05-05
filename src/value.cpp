@@ -1,4 +1,3 @@
-// value.cpp
 #include "value.h"
 #include <sstream>
 #include <iomanip>

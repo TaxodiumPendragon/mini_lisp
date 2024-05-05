@@ -1,0 +1,21 @@
+1.为什么 Tokenizer::tokenize 接受的形参类型是 const std::string& 而不是 std::string？可不可以用 std::string&？
+
+加const可以让临时对象或右值对象也能作为参数被传进来，有利于接受输入的字符串参数，而且const应用显式地保证了函数不会修改传入的这个数据，使得函数作用更易懂且显得安全，&的引用格式可以避免参数传递时复制带来的额外的时间和内存上的开销。
+
+2.为什么使用 TokenPtr，也即 std::unique_ptr<Token>？如果改用 Token*，会有什么影响？
+
+std::unique_ptr<Token>是智能指针，可以在生命周期结束时自动删除指向的对象以防止内存泄漏，且支持转移语义可以节约复制所使用的内存，而使用裸指针Token*则容易出错。
+
+3.main 函数中 std::cout << *token 是如何实现的？
+
+*token对上一题中的智能指针token解引用，得到了一个Token对象，在token.h中声明了对<<运算符的重载，然后在token.cpp中实现，形如：
+std::ostream& operator<<(std::ostream& os, const Token& token);这里的输出正是通过<<预算法重载函数实现的。
+std::cout和Token对象被传入该重载运算符，然后输出了token.toString()的结果，toString()通过多态根据Token所指向的不同的派生类输出不同结果
+
+4.当词法分析出现错误时，程序是如何进行错误处理的？
+
+词法分析器可能会抛出一个类型为std::runtime_error的异常，然后被main函数中的try-catch函数捕捉，在catch中程序会输出"Error:"和错误的详细信息e.what()，然后程序会继续运行，而非因为错误而终止运行。
+
+5.* 使用 std::deque<TokenPtr> 相比 std::vector<TokenPtr> 的好处是什么？
+
+双向队列deque在两端增删元素都具有较佳的性能，大部分情况下是常数时间，动态数组vector则只在尾端增删元素时具有较佳的性能，对于需要在头部进行处理的lisp词法分析器来说可能有利。此外，vector需要连续内存存储，可能会占用过大连续空间，而deque不需要。
