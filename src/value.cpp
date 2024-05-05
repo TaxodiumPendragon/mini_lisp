@@ -36,9 +36,10 @@ std::string PairValue::toString() const {
     oss << left->toString();
     if (typeid(*right) == typeid(PairValue)) {
         auto& pair = static_cast<const PairValue&>(*right);
-        oss << " " << pair.getLeft()->toString();
-        if (typeid(*pair.getRight()) != typeid(NilValue)) {
-            oss << " . " << pair.getRight()->toString();
+        if (typeid(*pair.getRight()) == typeid(NilValue)) {
+            oss << " " << pair.getLeft()->toString();
+        } else {
+            oss << " " << pair.getLeft()->toString() << " " << pair.getRight()->toString();
         }
     } else if (typeid(*right) != typeid(NilValue)) {
         oss << " . " << right->toString();

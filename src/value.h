@@ -16,6 +16,7 @@ class BooleanValue : public Value {
 public:
     BooleanValue(bool value) : value(value) {}
     std::string toString() const override;
+    ~BooleanValue() override = default;
 };
 
 class NumericValue : public Value {
@@ -24,6 +25,7 @@ class NumericValue : public Value {
 public:
     NumericValue(double value) : value(value) {}
     std::string toString() const override;
+    ~NumericValue() override = default;
 };
 
 class StringValue : public Value {
@@ -32,11 +34,13 @@ class StringValue : public Value {
 public:
     StringValue(const std::string& value) : value(value) {}
     std::string toString() const override;
+    ~StringValue() override = default;
 };
 
 class NilValue : public Value {
 public:
     std::string toString() const override;
+    ~NilValue() override = default;
 };
 
 class SymbolValue : public Value {
@@ -46,6 +50,7 @@ private:
 public:
     SymbolValue(const std::string& name) : value(name) {}
     std::string toString() const override;
+    ~SymbolValue() override = default;
 };
 
 class PairValue : public Value {
@@ -55,6 +60,7 @@ class PairValue : public Value {
 public:
     PairValue(std::shared_ptr<Value> left, std::shared_ptr<Value> right)
         : left(left), right(right) {}
+    ~PairValue() override = default;
     std::shared_ptr<Value> getLeft() const {
         return left;
     }
