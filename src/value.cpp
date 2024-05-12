@@ -1,6 +1,7 @@
 #include "value.h"
-#include <sstream>
+
 #include <iomanip>
+#include <sstream>
 
 std::string BooleanValue::toString() const {
     return value ? "#t" : "#f";
@@ -30,20 +31,22 @@ std::string SymbolValue::toString() const {
     return value;
 }
 
-std::string PairValue::toString() const {
+std::string PairValue::toStringPure() const {
     std::ostringstream oss;
-    oss << "(";
     oss << left->toString();
     if (typeid(*right) == typeid(PairValue)) {
         auto& pair = static_cast<const PairValue&>(*right);
         if (typeid(*pair.getRight()) == typeid(NilValue)) {
             oss << " " << pair.getLeft()->toString();
         } else {
-            oss << " " << pair.getLeft()->toString() << " " << pair.getRight()->toString();
+            oss << " " << pair.toStringPure();
         }
     } else if (typeid(*right) != typeid(NilValue)) {
         oss << " . " << right->toString();
     }
-    oss << ")";
     return oss.str();
+}
+
+std::string PairValue::toString() const {
+    return "(" + toStringPure() + ")";
 }

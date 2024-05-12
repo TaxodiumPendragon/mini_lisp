@@ -1,6 +1,7 @@
 #ifndef VALUE_H
 #define VALUE_H
 
+#include <iostream>
 #include <memory>
 #include <string>
 
@@ -10,6 +11,9 @@ public:
     virtual std::string toString() const = 0;
 };
 
+using ValuePtr =
+    std::shared_ptr<Value>;  // 把这个添加到 value.h，可以减少许多重复的代码。
+    
 class BooleanValue : public Value {
     bool value;
 
@@ -67,6 +71,7 @@ public:
     std::shared_ptr<Value> getRight() const {
         return right;
     }
+    std::string toStringPure() const;
     std::string toString() const override;
 };
 

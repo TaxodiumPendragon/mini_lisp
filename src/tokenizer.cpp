@@ -6,7 +6,7 @@
 
 #include "./error.h"
 
-const std::set<char> TOKEN_END{'(', ')', '\'', '`', ',', '"'};
+const std::set<char> TOKEN_END{'(', ')', '\'', '`', ',', '"'};//关联容器
 
 TokenPtr Tokenizer::nextToken(int& pos) {
     while (pos < input.size()) {

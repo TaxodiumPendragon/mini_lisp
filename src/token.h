@@ -7,17 +7,17 @@
 #include <string>
 
 enum class TokenType {
-    LEFT_PAREN,
-    RIGHT_PAREN,
-    QUOTE,
+    LEFT_PAREN,//左括号(
+    RIGHT_PAREN,//右括号)
+    QUOTE,//单引号
     QUASIQUOTE,
     UNQUOTE,
-    DOT,
-    BOOLEAN_LITERAL,
-    NUMERIC_LITERAL,
-    STRING_LITERAL,
-    IDENTIFIER,
-};
+    DOT,//点.
+    BOOLEAN_LITERAL,//布尔
+    NUMERIC_LITERAL,//数字
+    STRING_LITERAL,//字符串
+    IDENTIFIER,//标识符(变量名)
+};//使用enum来定义做type的常数
 
 class Token;
 using TokenPtr = std::unique_ptr<Token>;
