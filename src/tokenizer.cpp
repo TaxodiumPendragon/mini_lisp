@@ -17,7 +17,7 @@ TokenPtr Tokenizer::nextToken(int& pos) {
             }
         } else if (std::isspace(c)) {
             pos++;
-        } else if (auto token = Token::fromChar(c)) {
+        } else if (auto token = Token::fromChar(c)) {//返回的指针非空时为真
             pos++;
             return token;
         } else if (c == '#') {

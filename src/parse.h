@@ -13,6 +13,7 @@ class Parser {
 public:
     Parser(std::deque<TokenPtr> tokens);
     ValuePtr parse();
+    ValuePtr parseTails();
 };
 
 #endif
