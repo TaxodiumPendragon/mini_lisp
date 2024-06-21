@@ -9,11 +9,13 @@ class Value {
 public:
     virtual ~Value() = default;
     virtual std::string toString() const = 0;
+    bool isNil();
+    bool isSelfEvaluating();
 };
 
 using ValuePtr =
     std::shared_ptr<Value>;  // 把这个添加到 value.h，可以减少许多重复的代码。
-    
+
 class BooleanValue : public Value {
     bool value;
 

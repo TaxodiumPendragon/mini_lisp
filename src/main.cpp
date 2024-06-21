@@ -1,5 +1,6 @@
 #include <string>
 
+#include "eval_env.h"
 #include "parse.h"
 #include "rjsj_test.hpp"
 #include "tokenizer.h"
@@ -15,12 +16,13 @@ struct TestCtx {
 };
 
 int main() {
-    RJSJ_TEST(TestCtx, Lv2, Lv2Only);
-    ValuePtr a = std::make_shared<PairValue>(
+    // RJSJ_TEST(TestCtx, Lv2, Lv2Only);
+    /*ValuePtr a = std::make_shared<PairValue>(
         std::make_shared<SymbolValue>("quote"),
         std::make_shared<PairValue>(std::make_shared<NumericValue>(42),
                                     std::make_shared<NilValue>()));
-    std::cout << a->toString() << std::endl;
+    std::cout << a->toString() << std::endl;*/
+    EvalEnv env;
     while (true) {
         try {
             std::cout << ">>> ";
@@ -32,7 +34,8 @@ int main() {
             auto tokens = Tokenizer::tokenize(line);
             Parser parser(std::move(tokens));  // TokenPtr 不支持复制
             auto value = parser.parse();
-            std::cout << value->toString() << std::endl;  // test2
+            auto result = env.eval(std::move(value));
+            std::cout << result->toString() << std::endl;  // test3
             for (auto& token : tokens) {
                 std::cout << *token << std::endl;
             }

@@ -3,6 +3,15 @@
 #include <iomanip>
 #include <sstream>
 
+bool Value::isNil() {
+    return dynamic_cast<NilValue*>(this) != nullptr;
+}
+
+bool Value::isSelfEvaluating() {
+    return dynamic_cast<BooleanValue*>(this) != nullptr ||
+           dynamic_cast<NumericValue*>(this) != nullptr ||
+           dynamic_cast<StringValue*>(this) != nullptr;
+}
 std::string BooleanValue::toString() const {
     return value ? "#t" : "#f";
 }
