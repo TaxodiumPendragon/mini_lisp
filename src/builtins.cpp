@@ -27,7 +27,12 @@ std::unordered_map<std::string, ValuePtr (*)(const std::vector<ValuePtr>&)>
         {"expt", exp},
         {"quotient", quotient},
         {"remainder", remainder},
-        {"zero?", zero}
+        {"zero?", zero_q},
+        {"=", equal},
+        {"<", less},
+        {">", greater},
+        {"<=", less_equal},
+        {">=", greater_equal},
         // 添加其他内置过程
 };
 
@@ -222,9 +227,49 @@ ValuePtr remainder(const std::vector<ValuePtr>& params) {
 }
 
 // 比较库
-ValuePtr zero(const std::vector<ValuePtr>& params) {
+ValuePtr zero_q(const std::vector<ValuePtr>& params) {
     if (params.empty() || !params.front()->isNumber()) {
         throw LispError("zero? expects a numeric argument.");
     }
     return std::make_shared<BooleanValue>(params.front()->asNumber() == 0);
+}
+
+ValuePtr equal(const std::vector<ValuePtr>& params) {
+    if (params.size() != 2) {
+        throw LispError("= expects 2 arguments.");
+    }
+    return std::make_shared<BooleanValue>(params[0]->asNumber() ==
+                                          params[1]->asNumber());
+}
+
+ValuePtr less(const std::vector<ValuePtr>& params) {
+    if (params.size() != 2) {
+        throw LispError("< expects 2 arguments.");
+    }
+    return std::make_shared<BooleanValue>(params[0]->asNumber() <
+                                          params[1]->asNumber());
+}
+
+ValuePtr greater(const std::vector<ValuePtr>& params) {
+    if (params.size() != 2) {
+        throw LispError("> expects 2 arguments.");
+    }
+    return std::make_shared<BooleanValue>(params[0]->asNumber() >
+                                          params[1]->asNumber());
+}
+
+ValuePtr less_equal(const std::vector<ValuePtr>& params) {
+    if (params.size() != 2) {
+        throw LispError("<= expects 2 arguments.");
+    }
+    return std::make_shared<BooleanValue>(params[0]->asNumber() <=
+                                          params[1]->asNumber());
+}
+
+ValuePtr greater_equal(const std::vector<ValuePtr>& params) {
+    if (params.size() != 2) {
+        throw LispError(">= expects 2 arguments.");
+    }
+    return std::make_shared<BooleanValue>(params[0]->asNumber() >=
+                                          params[1]->asNumber());
 }

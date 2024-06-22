@@ -18,7 +18,7 @@ struct TestCtx {
 };
 
 int main() {
-    RJSJ_TEST(TestCtx, Lv2, Lv3);
+    RJSJ_TEST(TestCtx, Lv2, Lv3, Lv4, Lv5,Lv5Extra);
     /*ValuePtr a = std::make_shared<PairValue>(
         std::make_shared<SymbolValue>("quote"),
         std::make_shared<PairValue>(std::make_shared<NumericValue>(42),

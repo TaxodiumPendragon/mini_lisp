@@ -6,6 +6,7 @@
 
 #include ".\builtins.h"
 #include ".\error.h"
+#include ".\forms.h"
 #include ".\value.h"
 
 EvalEnv::EvalEnv() {
@@ -32,7 +33,7 @@ ValuePtr EvalEnv::apply(ValuePtr proc, std::vector<ValuePtr> args) {
 }
 
 ValuePtr EvalEnv::eval(ValuePtr expr) {
-    using namespace std::literals;
+    using namespace std::literals;  //!
     if (expr->isSelfEvaluating() || expr->isProcedure()) {
         return expr;
     } else if (expr->isNil()) {
@@ -46,16 +47,14 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
         }
     } else {
         std::vector<ValuePtr> v = expr->toVector();
-        if (v[0]->asSymbol() == "define"s) {
-            if (auto name = v[1]->asSymbol()) {
-                symbolTable[*name] = eval(v[2]);
-                return std::make_shared<NilValue>();
-            } else {
-                throw LispError("Malformed define.");
-            }
-        } else {
+        auto n = v[0]->asSymbol();
+        auto it = SPECIAL_FORMS.find(*n);
+        if (it != SPECIAL_FORMS.end()) {
+            std::vector<ValuePtr> args(v.begin() + 1, v.end());
+            return it->second(args, *this);
+        }
+        else {
             // 处理非特殊形式的列表表达式
-            // TODO 暂时不太清楚怎么判断不是特殊形式
             ValuePtr proc = eval(v[0]);
             std::vector<ValuePtr> args;
             std::transform(v.begin() + 1, v.end(), std::back_inserter(args),

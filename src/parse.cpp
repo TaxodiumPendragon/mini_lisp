@@ -46,7 +46,6 @@ ValuePtr Parser::parse() {
     } else if (token->getType() == TokenType::LEFT_PAREN) {
         return parseTails();
     } else if (token->getType() == TokenType::QUOTE) {
-        std::cout << "quote" << std::endl;
         return std::make_shared<PairValue>(
             std::make_shared<SymbolValue>("quote"),
             std::make_shared<PairValue>(

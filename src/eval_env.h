@@ -5,9 +5,8 @@
 #include "./value.h"
 
 class EvalEnv {
-    std::unordered_map<std::string, ValuePtr> symbolTable;
-
 public:
+    std::unordered_map<std::string, ValuePtr> symbolTable;
     EvalEnv();
     ValuePtr eval(ValuePtr expr);
     std::vector<ValuePtr> evalList(ValuePtr expr);

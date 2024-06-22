@@ -144,3 +144,7 @@ bool BuiltinProcValue::isProcedure() const {
 BuiltinFuncType* BuiltinProcValue::getFunc() const {
     return func;
 }
+
+std::string LambdaValue::toString() const {
+    return "#procedure";
+}

@@ -108,7 +108,19 @@ public:
     ~BuiltinProcValue() override = default;
     std::string toString() const override;
     bool isProcedure() const override;
-    BuiltinFuncType* getFunc() const ;
+    BuiltinFuncType* getFunc() const;
+};
+
+class LambdaValue : public Value {
+    std::vector<std::string> params;
+    std::vector<ValuePtr> body;
+
+public:
+    LambdaValue(const std::vector<std::string>& params,
+                const std::vector<ValuePtr>& body)
+        : params(params), body(body) {}
+    ~LambdaValue() override = default;
+    std::string toString() const override;
 };
 
 #endif
