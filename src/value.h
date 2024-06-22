@@ -3,7 +3,9 @@
 
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <string>
+#include <vector>
 
 class Value {
 public:
@@ -11,10 +13,14 @@ public:
     virtual std::string toString() const = 0;
     bool isNil();
     bool isSelfEvaluating();
+    std::vector<std::shared_ptr<Value>> toVector();
+    std::optional<std::string> asSymbol();
 };
 
 using ValuePtr =
     std::shared_ptr<Value>;  // 把这个添加到 value.h，可以减少许多重复的代码。
+
+using BuiltinFuncType = ValuePtr(const std::vector<ValuePtr>&);
 
 class BooleanValue : public Value {
     bool value;
@@ -76,5 +82,26 @@ public:
     std::string toStringPure() const;
     std::string toString() const override;
 };
+
+class ListValue : public Value {
+    std::vector<ValuePtr> values;
+
+public:
+    ListValue(const std::vector<ValuePtr>& values) : values(values) {}
+    ~ListValue() override = default;
+
+    void append(ValuePtr value);
+    ValuePtr operator[](size_t index) const;
+    std::string toString() const override;
+};
+
+class BuiltinProcValue : public Value {
+    BuiltinFuncType* func;
+public:
+    BuiltinProcValue(BuiltinFuncType* func) : func(func) {}
+    ~BuiltinProcValue() override = default;
+    std::string toString() const override;
+};
+
 
 #endif

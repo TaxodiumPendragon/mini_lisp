@@ -2,6 +2,33 @@
 
 #include <iomanip>
 #include <sstream>
+#include <stdexcept>
+
+std::vector<std::shared_ptr<Value>> Value::toVector() {
+    std::vector<ValuePtr> result;
+    auto pairValue = dynamic_cast<PairValue*>(this);
+    if (pairValue == nullptr) {
+        throw std::runtime_error(
+            "RuntimeError: Value who want to be list is not a PairValue");
+    }
+    auto left = pairValue->getLeft();
+    auto right = pairValue->getRight();
+    if (left != nullptr) {
+        result.push_back(left);
+    }
+    if (right != nullptr && (typeid(*right) != typeid(NilValue))) {
+        auto rightVector = right->toVector();
+        result.insert(result.end(), rightVector.begin(), rightVector.end());
+    }
+    return result;
+}
+std::optional<std::string> Value::asSymbol() {
+    auto symbolValue = dynamic_cast<SymbolValue*>(this);
+    if (symbolValue == nullptr) {
+        return std::nullopt;
+    }
+    return symbolValue->toString();
+}
 
 bool Value::isNil() {
     return dynamic_cast<NilValue*>(this) != nullptr;
@@ -58,4 +85,28 @@ std::string PairValue::toStringPure() const {
 
 std::string PairValue::toString() const {
     return "(" + toStringPure() + ")";
+}
+
+ValuePtr ListValue::operator[](size_t index) const {
+    if (index >= values.size() || index < 0) {
+        throw std::out_of_range("The Index of ListValue out of range");
+    }
+    return values[index];
+}
+
+std::string ListValue::toString() const {
+    std::string result = "(";
+    for (const auto& value : values) {
+        result += value->toString() + " ";
+    }
+    result += ")";
+    return result;
+}
+
+void ListValue::append(ValuePtr value) {
+    values.push_back(value);
+}
+
+std::string BuiltinProcValue::toString() const {
+    return "#procedure";
 }
