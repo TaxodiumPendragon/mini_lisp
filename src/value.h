@@ -11,10 +11,14 @@ class Value {
 public:
     virtual ~Value() = default;
     virtual std::string toString() const = 0;
+    virtual bool isProcedure() const;
     bool isNil();
     bool isSelfEvaluating();
+    bool isNumber();
     std::vector<std::shared_ptr<Value>> toVector();
     std::optional<std::string> asSymbol();
+    bool isPair();
+    double asNumber();
 };
 
 using ValuePtr =
@@ -37,6 +41,7 @@ class NumericValue : public Value {
 public:
     NumericValue(double value) : value(value) {}
     std::string toString() const override;
+    double getValue() const;
     ~NumericValue() override = default;
 };
 
@@ -97,11 +102,13 @@ public:
 
 class BuiltinProcValue : public Value {
     BuiltinFuncType* func;
+
 public:
     BuiltinProcValue(BuiltinFuncType* func) : func(func) {}
     ~BuiltinProcValue() override = default;
     std::string toString() const override;
+    bool isProcedure() const override;
+    BuiltinFuncType* getFunc() const ;
 };
-
 
 #endif

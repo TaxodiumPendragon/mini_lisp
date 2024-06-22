@@ -22,6 +22,7 @@ std::vector<std::shared_ptr<Value>> Value::toVector() {
     }
     return result;
 }
+
 std::optional<std::string> Value::asSymbol() {
     auto symbolValue = dynamic_cast<SymbolValue*>(this);
     if (symbolValue == nullptr) {
@@ -39,6 +40,27 @@ bool Value::isSelfEvaluating() {
            dynamic_cast<NumericValue*>(this) != nullptr ||
            dynamic_cast<StringValue*>(this) != nullptr;
 }
+
+bool Value::isNumber() {
+    return dynamic_cast<NumericValue*>(this) != nullptr;
+}
+
+bool Value::isProcedure() const {
+    return false;
+}
+
+bool Value::isPair() {
+    return dynamic_cast<PairValue*>(this) != nullptr;
+}
+
+double Value::asNumber() {
+    auto numericValue = dynamic_cast<NumericValue*>(this);
+    if (numericValue == nullptr) {
+        throw std::runtime_error("RuntimeError: Value is not a NumericValue");
+    }
+    return numericValue->getValue();
+}
+
 std::string BooleanValue::toString() const {
     return value ? "#t" : "#f";
 }
@@ -51,6 +73,10 @@ std::string NumericValue::toString() const {
         oss << value;
     }
     return oss.str();
+}
+
+double NumericValue::getValue() const {
+    return value;
 }
 
 std::string StringValue::toString() const {
@@ -109,4 +135,12 @@ void ListValue::append(ValuePtr value) {
 
 std::string BuiltinProcValue::toString() const {
     return "#procedure";
+}
+
+bool BuiltinProcValue::isProcedure() const {
+    return true;
+}
+
+BuiltinFuncType* BuiltinProcValue::getFunc() const {
+    return func;
 }
