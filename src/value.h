@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+class EvalEnv;
 class Value {
 public:
     virtual ~Value() = default;
@@ -15,22 +16,27 @@ public:
     bool isNil();
     bool isSelfEvaluating();
     bool isNumber();
+    bool isPair();
+    virtual bool isSymbol();
+    virtual bool isBoolean();
+    virtual bool isString();
+    double asNumber();
+    bool asBoolean();
     std::vector<std::shared_ptr<Value>> toVector();
     std::optional<std::string> asSymbol();
-    bool isPair();
-    double asNumber();
 };
 
 using ValuePtr =
     std::shared_ptr<Value>;  // 把这个添加到 value.h，可以减少许多重复的代码。
 
-using BuiltinFuncType = ValuePtr(const std::vector<ValuePtr>&);
+using BuiltinFuncType = ValuePtr(const std::vector<ValuePtr>&, EvalEnv& env);
 
 class BooleanValue : public Value {
     bool value;
 
 public:
     BooleanValue(bool value) : value(value) {}
+    bool getValue() const;
     std::string toString() const override;
     ~BooleanValue() override = default;
 };
@@ -51,6 +57,7 @@ class StringValue : public Value {
 public:
     StringValue(const std::string& value) : value(value) {}
     std::string toString() const override;
+    std::string getValue() const;
     ~StringValue() override = default;
 };
 
@@ -78,6 +85,7 @@ public:
     PairValue(std::shared_ptr<Value> left, std::shared_ptr<Value> right)
         : left(left), right(right) {}
     ~PairValue() override = default;
+    void setRight(std::shared_ptr<Value> value);void setLeft(std::shared_ptr<Value> value);
     std::shared_ptr<Value> getLeft() const {
         return left;
     }
@@ -111,16 +119,21 @@ public:
     BuiltinFuncType* getFunc() const;
 };
 
+
 class LambdaValue : public Value {
     std::vector<std::string> params;
     std::vector<ValuePtr> body;
+    std::shared_ptr<EvalEnv> definingEnv;
 
 public:
     LambdaValue(const std::vector<std::string>& params,
-                const std::vector<ValuePtr>& body)
-        : params(params), body(body) {}
+                const std::vector<ValuePtr>& body,
+                std::shared_ptr<EvalEnv> definingEnv)
+        : params(params), body(body), definingEnv(definingEnv) {}
     ~LambdaValue() override = default;
     std::string toString() const override;
+    ValuePtr apply(const std::vector<ValuePtr>& args);
+    bool isProcedure() const override;
 };
 
 #endif

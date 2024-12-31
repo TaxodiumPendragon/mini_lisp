@@ -105,7 +105,8 @@ struct OtherToken {
     std::string text;
 };  // procedure etc.
 
-using Token = std::variant<LParenToken, RParenToken, DotToken, Bool, Num, Str, Sym, OtherToken>;
+using Token = std::variant<LParenToken, RParenToken, DotToken, Bool, Num, Str,
+                           Sym, OtherToken>;
 
 inline std::optional<Token> tokenFromChar(char c) {
     switch (c) {
@@ -142,7 +143,8 @@ inline std::deque<Token> tokenize(const std::string& input) {
                         return Token{Str{string}};
                     } else if (input[pos] == '\\') {
                         if (pos + 1 >= input.size()) {
-                            throw std::runtime_error("Unexpected end of string literal");
+                            throw std::runtime_error(
+                                "Unexpected end of string literal");
                         }
                         auto next = input[pos + 1];
                         if (next == 'n') {
@@ -170,8 +172,8 @@ inline std::deque<Token> tokenize(const std::string& input) {
                     return Token{Bool{true}};
                 } else if (text == "#f") {
                     return Token{Bool{false}};
-                } else if (std::isdigit(text[0]) || text[0] == '+' || text[0] == '-' ||
-                           text[0] == '.') {
+                } else if (std::isdigit(text[0]) || text[0] == '+' ||
+                           text[0] == '-' || text[0] == '.') {
                     try {
                         return Token{Num{std::stod(text)}};
                     } catch (std::invalid_argument& e) {
@@ -242,15 +244,16 @@ struct Pair {
 struct OutputCdr {
     std::stringstream& ss;
     void operator()(const Value& value) {
-        std::visit(Overloaded{
-                       [&](const Null&) { ss << ")"; },
-                       [&](const Pair& pair) {
-                           ss << " " << toString(*pair.car);
-                           OutputCdr{ss}(*pair.cdr);
-                       },
-                       [&](const auto&) { ss << " . " << toString(value) << ")"; },
-                   },
-                   value);
+        std::visit(
+            Overloaded{
+                [&](const Null&) { ss << ")"; },
+                [&](const Pair& pair) {
+                    ss << " " << toString(*pair.car);
+                    OutputCdr{ss}(*pair.cdr);
+                },
+                [&](const auto&) { ss << " . " << toString(value) << ")"; },
+            },
+            value);
     }
 };
 
@@ -297,16 +300,17 @@ inline Value parseList(std::deque<Token>& tokens) {
 
 inline std::unique_ptr<Value> parse(std::deque<Token>& tokens) {
     auto token = nextToken(tokens);
-    auto value = std::visit(Overloaded{
-                                [&](LParenToken) { return parseList(tokens); },
-                                [](Bool x) { return Value{x}; },
-                                [](Num x) { return Value{x}; },
-                                [](Str x) { return Value{x}; },
-                                [](Sym x) { return Value{x}; },
-                                [](OtherToken) { return Value{Proc{}}; },
-                                [](auto) -> Value { throw std::runtime_error("Unexpected token"); },
-                            },
-                            token);
+    auto value = std::visit(
+        Overloaded{
+            [&](LParenToken) { return parseList(tokens); },
+            [](Bool x) { return Value{x}; },
+            [](Num x) { return Value{x}; },
+            [](Str x) { return Value{x}; },
+            [](Sym x) { return Value{x}; },
+            [](OtherToken) { return Value{Proc{}}; },
+            [](auto) -> Value { throw std::runtime_error("Unexpected token"); },
+        },
+        token);
     return std::make_unique<Value>(std::move(value));
 }
 
@@ -327,10 +331,10 @@ struct Cases {
 
 #ifdef RMLT_INTERNAL_CONCEPT_ENABLED
 template <typename T>
-concept TestCtx =
-    std::movable<T> && std::default_initializable<T> && requires(T env, const std::string& str) {
-        { env.eval(str) } -> std::convertible_to<std::string>;
-    };
+concept TestCtx = std::movable<T> && std::default_initializable<T> &&
+                  requires(T env, const std::string& str) {
+                      { env.eval(str) } -> std::convertible_to<std::string>;
+                  };
 #define RMLT_INTERNAL_TEST_ENV TestCtx
 #else
 #define RMLT_INTERNAL_TEST_ENV typename
@@ -348,7 +352,8 @@ public:
         HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
         DWORD mode{};
         GetConsoleMode(hOut, &mode);
-        mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING | DISABLE_NEWLINE_AUTO_RETURN;
+        mode |=
+            ENABLE_VIRTUAL_TERMINAL_PROCESSING | DISABLE_NEWLINE_AUTO_RETURN;
         SetConsoleMode(hOut, mode);
 #endif
     }
@@ -372,8 +377,9 @@ public:
                             std::cout << " \033[32mok\033[0m\n";
                             successNum++;
                         } else {
-                            std::cout << " \033[31mbad\033[0m \033[90m[expected "
-                                      << toString(expected) << "]\033[0m\n";
+                            std::cout
+                                << " \033[31mbad\033[0m \033[90m[expected "
+                                << toString(expected) << "]\033[0m\n";
                         }
                     } else {
                         std::cout << " \033[32mok\033[0m\n";
@@ -383,30 +389,36 @@ public:
                     std::cout << " \033[31mbad\033[0m";
                     if (output) {
                         auto expected = buildValueFromStr(*output);
-                        std::cout << " \033[90m[expected " << toString(expected) << "]\033[0m";
+                        std::cout << " \033[90m[expected " << toString(expected)
+                                  << "]\033[0m";
                     }
-                    std::cout << "\nException thrown: " << e.what() << std::endl;
+                    std::cout << "\nException thrown: " << e.what()
+                              << std::endl;
                 }
             }
             bool ac = successNum == case_.cases.size();
-            std::cout << (ac ? "\033[1;32mTest Passed\033[0m\n" : "\033[1;31mTest failed\033[0m\n");
+            std::cout << (ac ? "\033[1;32mTest Passed\033[0m\n"
+                             : "\033[1;31mTest failed\033[0m\n");
             nums.emplace_back(successNum, case_.cases.size());
             allResult &= ac;
         }
-        std::cout << "\033[1mSummary\033[0m\n+------------+-----------+\n| NAME       | RESULT    "
+        std::cout << "\033[1mSummary\033[0m\n+------------+-----------+\n| "
+                     "NAME       | RESULT    "
                      "|\n+------------+-----------+\n";
         int totalSuccessNum = 0, totalTotalNum = 0;
         for (int i = 0; i < cases.size(); i++) {
             auto [successNum, totalNum] = nums[i];
-            std::cout << "| " << std::left << std::setw(10) << cases[i].name << " | " << std::right
-                      << std::setw(4) << successNum << "/" << std::left << std::setw(4) << totalNum
-                      << " |\n";
+            std::cout << "| " << std::left << std::setw(10) << cases[i].name
+                      << " | " << std::right << std::setw(4) << successNum
+                      << "/" << std::left << std::setw(4) << totalNum << " |\n";
             totalSuccessNum += successNum;
             totalTotalNum += totalNum;
         }
-        std::cout << "+------------+-----------+\n| " << std::left << std::setw(10) << "Total"
-                  << " | " << std::right << std::setw(4) << totalSuccessNum << "/" << std::left
-                  << std::setw(4) << totalTotalNum << " |\n+------------+-----------+\n";
+        std::cout << "+------------+-----------+\n| " << std::left
+                  << std::setw(10) << "Total" << " | " << std::right
+                  << std::setw(4) << totalSuccessNum << "/" << std::left
+                  << std::setw(4) << totalTotalNum
+                  << " |\n+------------+-----------+\n";
         return allResult;
     }
 };
@@ -488,24 +500,33 @@ public:
 #define PP_GET_N_9(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, ...) _9
 #define PP_GET_N_10(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, ...) _10
 #define PP_GET_N_11(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, ...) _11
-#define PP_GET_N_12(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, ...) _12
-#define PP_GET_N_13(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, ...) _13
-#define PP_GET_N_14(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, ...) _14
-#define PP_GET_N_15(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, ...) _15
-#define PP_GET_N_16(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, \
-                    ...)                                                                       \
+#define PP_GET_N_12(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, \
+                    ...)                                                   \
+    _12
+#define PP_GET_N_13(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, \
+                    _13, ...)                                              \
+    _13
+#define PP_GET_N_14(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, \
+                    _13, _14, ...)                                         \
+    _14
+#define PP_GET_N_15(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, \
+                    _13, _14, _15, ...)                                    \
+    _15
+#define PP_GET_N_16(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, \
+                    _13, _14, _15, _16, ...)                               \
     _16
-#define PP_IS_EMPTY(...)                                                                   \
-    PP_AND(PP_AND(PP_NOT(PP_HAS_COMMA(__VA_ARGS__)), PP_NOT(PP_HAS_COMMA(__VA_ARGS__()))), \
-           PP_AND(PP_NOT(PP_HAS_COMMA(PP_COMMA_V __VA_ARGS__)),                            \
+#define PP_IS_EMPTY(...)                                        \
+    PP_AND(PP_AND(PP_NOT(PP_HAS_COMMA(__VA_ARGS__)),            \
+                  PP_NOT(PP_HAS_COMMA(__VA_ARGS__()))),         \
+           PP_AND(PP_NOT(PP_HAS_COMMA(PP_COMMA_V __VA_ARGS__)), \
                   PP_HAS_COMMA(PP_COMMA_V __VA_ARGS__())))
 #define PP_HAS_COMMA(...) \
     PP_GET_N_16(__VA_ARGS__, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0)
 #define PP_COMMA_V(...) ,
 #define PP_VA_OPT_COMMA(...) PP_COMMA_IF(PP_NOT(PP_IS_EMPTY(__VA_ARGS__)))
-#define PP_NARG(...)                                                                              \
-    PP_GET_N(16, __VA_ARGS__ PP_VA_OPT_COMMA(__VA_ARGS__) 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, \
-             5, 4, 3, 2, 1, 0)
+#define PP_NARG(...)                                                          \
+    PP_GET_N(16, __VA_ARGS__ PP_VA_OPT_COMMA(__VA_ARGS__) 16, 15, 14, 13, 12, \
+             11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
 #define PP_FOR_EACH(DO, CTX, ...) \
     PP_CONCAT(PP_FOR_EACH_, PP_NARG(__VA_ARGS__))(DO, CTX, 0, __VA_ARGS__)
 #define PP_FOR_EACH_0(DO, CTX, IDX, ...)
@@ -586,10 +607,12 @@ public:
 
 #endif
 
-#define RMLT_BEGIN_CASES(NAME)                                                  \
-    static const rjsj_mini_lisp_test::Cases RMLT_INTERNAL_CASE_PREFIXED(NAME) { \
+#define RMLT_BEGIN_CASES(NAME)                                           \
+    static const rjsj_mini_lisp_test::Cases RMLT_INTERNAL_CASE_PREFIXED( \
+        NAME) {                                                          \
         #NAME, {
-#define RMLT_CASE(input, ...) {input, PP_IF(PP_IS_EMPTY(__VA_ARGS__), std::nullopt, __VA_ARGS__)},
+#define RMLT_CASE(input, ...) \
+    {input, PP_IF(PP_IS_EMPTY(__VA_ARGS__), std::nullopt, __VA_ARGS__)},
 #define RMLT_END_CASES(...) \
     }                       \
     }                       \
@@ -802,7 +825,8 @@ RMLT_CASE("(symbol? #f)", "#f")
 RMLT_CASE("(symbol? +)", "#f")
 RMLT_CASE("(symbol? '(a b c))", "#f")
 RMLT_CASE("(symbol? \"abc\")", "#f")
-RMLT_CASE("(append '(1 2 3) '(a b c) '(\"foo\" \"bar\"))", "(1 2 3 a b c \"foo\" \"bar\")")
+RMLT_CASE("(append '(1 2 3) '(a b c) '(\"foo\" \"bar\"))",
+          "(1 2 3 a b c \"foo\" \"bar\")")
 RMLT_CASE("(append)", "()")
 RMLT_CASE("(append (list 1 2 3))", "(1 2 3)")
 RMLT_CASE("(append '(1 2 3) '())", "(1 2 3)")
@@ -961,11 +985,13 @@ RMLT_CASE("(define (a-plus-abs-b a b) ((if (> b 0) + -) a b))")
 RMLT_CASE("(a-plus-abs-b 3 -2)", "5")
 // 1.1.7
 RMLT_CASE(
-    "(define (sqrt-iter guess x) (if (good-enough? guess x) guess (sqrt-iter (improve guess x) "
+    "(define (sqrt-iter guess x) (if (good-enough? guess x) guess (sqrt-iter "
+    "(improve guess x) "
     "x)))")
 RMLT_CASE("(define (improve guess x) (average guess (/ x guess)))")
 RMLT_CASE("(define (average x y) (/ (+ x y) 2))")
-RMLT_CASE("(define (good-enough? guess x) (< (abs (- (square guess) x)) 0.001))")
+RMLT_CASE(
+    "(define (good-enough? guess x) (< (abs (- (square guess) x)) 0.001))")
 RMLT_CASE("(define (sqrt x) (sqrt-iter 1.0 x))")
 RMLT_CASE("(sqrt 9)", "3.00009155413138")
 RMLT_CASE("(sqrt (+ 100 37))", "11.704699917758145")
@@ -973,16 +999,21 @@ RMLT_CASE("(sqrt (+ (sqrt 2) (sqrt 3)))", "1.7739279023207892")
 RMLT_CASE("(square (sqrt 1000))", "1000.000369924366")
 // 1.1.8
 RMLT_CASE(
-    "(define (sqrt x) (define (good-enough? guess) (< (abs (- (square guess) x)) 0.001)) (define "
-    "(improve guess) (average guess (/ x guess))) (define (sqrt-iter guess) (if (good-enough? "
-    "guess) guess (sqrt-iter (improve guess)))) (print (sqrt-iter 1.0)) (sqrt-iter 1.0))")
+    "(define (sqrt x) (define (good-enough? guess) (< (abs (- (square guess) "
+    "x)) 0.001)) (define "
+    "(improve guess) (average guess (/ x guess))) (define (sqrt-iter guess) "
+    "(if (good-enough? "
+    "guess) guess (sqrt-iter (improve guess)))) (print (sqrt-iter 1.0)) "
+    "(sqrt-iter 1.0))")
 RMLT_CASE("(sqrt 9)", "3.00009155413138")
 RMLT_CASE("(sqrt (+ 100 37))", "11.704699917758145")
 RMLT_CASE("(sqrt (+ (sqrt 2) (sqrt 3)))", "1.7739279023207892")
 RMLT_CASE("(square (sqrt 1000))", "1000.000369924366")
 // 1.3.1
 RMLT_CASE("(define (cube x) (* x x x))")
-RMLT_CASE("(define (sum term a next b) (if (> a b) 0 (+ (term a) (sum term (next a) next b))))")
+RMLT_CASE(
+    "(define (sum term a next b) (if (> a b) 0 (+ (term a) (sum term (next a) "
+    "next b))))")
 RMLT_CASE("(define (inc n) (+ n 1))")
 RMLT_CASE("(define (sum-cubes a b) (sum cube a inc b))")
 RMLT_CASE("(sum-cubes 1 10)", "3025")
@@ -992,21 +1023,30 @@ RMLT_CASE("(sum-integers 1 10)", "55")
 // 1.3.2
 RMLT_CASE("((lambda (x y z) (+ x y (square z))) 1 2 3)", "12")
 RMLT_CASE(
-    "(define (f x y) (let ((a (+ 1 (* x y))) (b (- 1 y))) (+ (* x (square a)) (* y b) (* a b))))")
+    "(define (f x y) (let ((a (+ 1 (* x y))) (b (- 1 y))) (+ (* x (square a)) "
+    "(* y b) (* a b))))")
 RMLT_CASE("(f 3 4)", "456")
 RMLT_CASE("(define x 5)")
 RMLT_CASE("(+ (let ((x 3)) (+ x (* x 10))) x)", "38")
 RMLT_CASE("(let ((x 3) (y (+ x 2))) (* x y))", "21")
 // 2.1.1
 RMLT_CASE(
-    "(define (add-rat x y) (make-rat (+ (* (numer x) (denom y)) (* (numer y) (denom x))) (* (denom "
+    "(define (add-rat x y) (make-rat (+ (* (numer x) (denom y)) (* (numer y) "
+    "(denom x))) (* (denom "
     "x) (denom y))))")
 RMLT_CASE(
-    "(define (sub-rat x y) (make-rat (- (* (numer x) (denom y)) (* (numer y) (denom x))) (* (denom "
+    "(define (sub-rat x y) (make-rat (- (* (numer x) (denom y)) (* (numer y) "
+    "(denom x))) (* (denom "
     "x) (denom y))))")
-RMLT_CASE("(define (mul-rat x y) (make-rat (* (numer x) (numer y)) (* (denom x) (denom y))))")
-RMLT_CASE("(define (div-rat x y) (make-rat (* (numer x) (denom y)) (* (denom x) (numer y))))")
-RMLT_CASE("(define (equal-rat? x y) (= (* (numer x) (denom y)) (* (numer y) (denom x))))")
+RMLT_CASE(
+    "(define (mul-rat x y) (make-rat (* (numer x) (numer y)) (* (denom x) "
+    "(denom y))))")
+RMLT_CASE(
+    "(define (div-rat x y) (make-rat (* (numer x) (denom y)) (* (denom x) "
+    "(numer y))))")
+RMLT_CASE(
+    "(define (equal-rat? x y) (= (* (numer x) (denom y)) (* (numer y) (denom "
+    "x))))")
 RMLT_CASE("(define x (cons 1 (cons 2 '())))")
 RMLT_CASE("(car x)", "1")
 RMLT_CASE("(cdr x)", "(2)")
@@ -1027,7 +1067,8 @@ RMLT_CASE("(cat-rat (add-rat one-half one-third))", "56")
 RMLT_CASE("(cat-rat (mul-rat one-half one-third))", "16")
 RMLT_CASE("(cat-rat (add-rat one-third one-third))", "69")
 RMLT_CASE("(define (gcd a b) (if (= b 0) a (gcd b (remainder a b))))")
-RMLT_CASE("(define (make-rat n d) (let ((g (gcd n d))) (list (/ n g) (/ d g))))")
+RMLT_CASE(
+    "(define (make-rat n d) (let ((g (gcd n d))) (list (/ n g) (/ d g))))")
 RMLT_CASE("(cat-rat (add-rat one-third one-third))", "23")
 RMLT_CASE("(define one-through-four (list 1 2 3 4))")
 RMLT_CASE("one-through-four", "(1 2 3 4)")
@@ -1037,14 +1078,17 @@ RMLT_CASE("(car (cdr one-through-four))", "2")
 RMLT_CASE("(cons 10 one-through-four)", "(10 1 2 3 4)")
 RMLT_CASE("(cons 5 one-through-four)", "(5 1 2 3 4)")
 RMLT_CASE(
-    "(define (map proc items) (if (null? items) '() (cons (proc (car items)) (map proc (cdr "
+    "(define (map proc items) (if (null? items) '() (cons (proc (car items)) "
+    "(map proc (cdr "
     "items)))))")
 RMLT_CASE("(map abs (list -10 2.5 -11.6 17))", "(10 2.5 11.6 17)")
 RMLT_CASE("(map (lambda (x) (* x x)) (list 1 2 3 4))", "(1 4 9 16)")
-RMLT_CASE("(define (scale-list items factor) (map (lambda (x) (* x factor)) items))")
+RMLT_CASE(
+    "(define (scale-list items factor) (map (lambda (x) (* x factor)) items))")
 RMLT_CASE("(scale-list (list 1 2 3 4 5) 10)", "(10 20 30 40 50)")
 RMLT_CASE(
-    "(define (count-leaves x) (cond ((null? x) 0) ((not (pair? x)) 1) (else (+ (count-leaves (car "
+    "(define (count-leaves x) (cond ((null? x) 0) ((not (pair? x)) 1) (else (+ "
+    "(count-leaves (car "
     "x)) (count-leaves (cdr x))))))")
 RMLT_CASE("(define x (cons (list 1 2) (list 3 4)))")
 RMLT_CASE("(count-leaves x)", "4")
@@ -1052,22 +1096,27 @@ RMLT_CASE("(count-leaves (list x x))", "8")
 // 2.2.3
 RMLT_CASE("(define (odd? x) (= 1 (remainder x 2)))")
 RMLT_CASE(
-    "(define (filter predicate sequence) (cond ((null? sequence) '()) ((predicate (car sequence)) "
-    "(cons (car sequence) (filter predicate (cdr sequence)))) (else (filter predicate (cdr "
+    "(define (filter predicate sequence) (cond ((null? sequence) '()) "
+    "((predicate (car sequence)) "
+    "(cons (car sequence) (filter predicate (cdr sequence)))) (else (filter "
+    "predicate (cdr "
     "sequence)))))")
 RMLT_CASE("(filter odd? (list 1 2 3 4 5))", "(1 3 5)")
 RMLT_CASE(
-    "(define (accumulate op initial sequence) (if (null? sequence) initial (op (car sequence) "
+    "(define (accumulate op initial sequence) (if (null? sequence) initial (op "
+    "(car sequence) "
     "(accumulate op initial (cdr sequence)))))")
 RMLT_CASE("(accumulate + 0 (list 1 2 3 4 5))", "15")
 RMLT_CASE("(accumulate * 1 (list 1 2 3 4 5))", "120")
 RMLT_CASE("(accumulate cons '() (list 1 2 3 4 5))", "(1 2 3 4 5)")
 RMLT_CASE(
-    "(define (enumerate-interval low high) (if (> low high) '() (cons low (enumerate-interval (+ "
+    "(define (enumerate-interval low high) (if (> low high) '() (cons low "
+    "(enumerate-interval (+ "
     "low 1) high))))")
 RMLT_CASE("(enumerate-interval 2 7)", "(2 3 4 5 6 7)")
 RMLT_CASE(
-    "(define (enumerate-tree tree) (cond ((null? tree) '()) ((not (pair? tree)) (list tree)) (else "
+    "(define (enumerate-tree tree) (cond ((null? tree) '()) ((not (pair? "
+    "tree)) (list tree)) (else "
     "(append (enumerate-tree (car tree)) (enumerate-tree (cdr tree))))))")
 RMLT_CASE("(enumerate-tree (list 1 (list 2 (list 3 4)) 5))", "(1 2 3 4 5)")
 // 2.3.1
@@ -1079,12 +1128,14 @@ RMLT_CASE("(list 'a b)", "(a 2)")
 RMLT_CASE("(car '(a b c))", "a")
 RMLT_CASE("(cdr '(a b c))", "(b c)")
 RMLT_CASE(
-    "(define (memq item x) (cond ((null? x) #f) ((equal? item (car x)) x) (else (memq item (cdr "
+    "(define (memq item x) (cond ((null? x) #f) ((equal? item (car x)) x) "
+    "(else (memq item (cdr "
     "x)))))")
 RMLT_CASE("(memq 'apple '(pear banana prune))", "#f")
 RMLT_CASE("(memq 'apple '(x (apple sauce) y apple pear))", "(apple pear)")
 RMLT_CASE(
-    "(define (my-equal? x y) (cond ((pair? x) (and (pair? y) (my-equal? (car x) (car y)) "
+    "(define (my-equal? x y) (cond ((pair? x) (and (pair? y) (my-equal? (car "
+    "x) (car y)) "
     "(my-equal? (cdr x) (cdr y)))) ((null? x) (null? y)) (else (equal? x y))))")
 RMLT_CASE("(my-equal? '(1 2 (three)) '(1 2 (three)))", "#t")
 RMLT_CASE("(my-equal? '(1 2 (three)) '(1 2 three))", "#f")
@@ -1099,19 +1150,25 @@ RMLT_CASE("((apply-twice double) 5)", "20")
 RMLT_CASE("((apply-twice (apply-twice double)) 5)", "80")
 RMLT_CASE("(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))")
 RMLT_CASE("(fact 3)", "6")
-// RMLT_CASE("(fact 50)", "30414093201713378043612608166064768844377641568960512000000000000")
+// RMLT_CASE("(fact 50)",
+// "30414093201713378043612608166064768844377641568960512000000000000")
 RMLT_CASE(
-    "(define (combine f) (lambda (x y) (if (null? x) '() (f (list (car x) (car y)) ((combine f) "
+    "(define (combine f) (lambda (x y) (if (null? x) '() (f (list (car x) (car "
+    "y)) ((combine f) "
     "(cdr x) (cdr y))))))")
 RMLT_CASE("(define zip (combine cons))")
 RMLT_CASE("(zip (list 1 2 3 4) (list 5 6 7 8))", "((1 5) (2 6) (3 7) (4 8))")
 RMLT_CASE(
-    "(define riff-shuffle (lambda (deck) (begin (define take (lambda (n seq) (if (<= n 0) (quote "
-    "()) (cons (car seq) (take (- n 1) (cdr seq)))))) (define drop (lambda (n seq) (if (<= n 0) "
-    "seq (drop (- n 1) (cdr seq))))) (define mid (lambda (seq) (/ (length seq) 2))) ((combine "
+    "(define riff-shuffle (lambda (deck) (begin (define take (lambda (n seq) "
+    "(if (<= n 0) (quote "
+    "()) (cons (car seq) (take (- n 1) (cdr seq)))))) (define drop (lambda (n "
+    "seq) (if (<= n 0) "
+    "seq (drop (- n 1) (cdr seq))))) (define mid (lambda (seq) (/ (length seq) "
+    "2))) ((combine "
     "append) (take (mid deck) deck) (drop (mid deck) deck)))))")
 RMLT_CASE("(riff-shuffle (list 1 2 3 4 5 6 7 8))", "(1 5 2 6 3 7 4 8)")
-RMLT_CASE("((apply-twice riff-shuffle) (list 1 2 3 4 5 6 7 8))", "(1 3 5 7 2 4 6 8)")
+RMLT_CASE("((apply-twice riff-shuffle) (list 1 2 3 4 5 6 7 8))",
+          "(1 3 5 7 2 4 6 8)")
 RMLT_CASE("(riff-shuffle (riff-shuffle (riff-shuffle (list 1 2 3 4 5 6 7 8))))",
           "(1 2 3 4 5 6 7 8)")
 // Additional tests
@@ -1122,8 +1179,8 @@ RMLT_CASE("(define (loop) (loop))")
 RMLT_CASE("(cond (#f (loop)) (12))", "12")
 RMLT_CASE("((lambda (x) (display x) (newline) x) 2)", "2")
 RMLT_CASE("(let ((x 2)) ((begin (if #t #f) +) 3 (begin x)))", "5")
-// RMLT_CASE("(let ((x 2)) ((begin (define x (+ x 1)) +) 3 (begin (define x (+ x 1)) x)))", "7")
-// Scheme Implementations
+// RMLT_CASE("(let ((x 2)) ((begin (define x (+ x 1)) +) 3 (begin (define x (+ x
+// 1)) x)))", "7") Scheme Implementations
 RMLT_CASE("(define (len s) (if (eq? s '()) 0 (+ 1 (len (cdr s)))))")
 RMLT_CASE("(len '(1 2 3 4))", "4")
 RMLT_END_CASES()

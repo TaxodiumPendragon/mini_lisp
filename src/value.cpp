@@ -4,6 +4,8 @@
 #include <sstream>
 #include <stdexcept>
 
+#include "eval_env.h"
+
 std::vector<std::shared_ptr<Value>> Value::toVector() {
     std::vector<ValuePtr> result;
     auto pairValue = dynamic_cast<PairValue*>(this);
@@ -53,6 +55,18 @@ bool Value::isPair() {
     return dynamic_cast<PairValue*>(this) != nullptr;
 }
 
+bool Value::isSymbol() {
+    return dynamic_cast<SymbolValue*>(this) != nullptr;
+}
+
+bool Value::isBoolean() {
+    return dynamic_cast<BooleanValue*>(this) != nullptr;
+}
+
+bool Value::isString() {
+    return dynamic_cast<StringValue*>(this) != nullptr;
+}
+
 double Value::asNumber() {
     auto numericValue = dynamic_cast<NumericValue*>(this);
     if (numericValue == nullptr) {
@@ -61,8 +75,20 @@ double Value::asNumber() {
     return numericValue->getValue();
 }
 
+bool Value::asBoolean() {
+    auto booleanValue = dynamic_cast<BooleanValue*>(this);
+    if (booleanValue == nullptr) {
+        throw std::runtime_error("RuntimeError: Value is not a BooleanValue");
+    }
+    return booleanValue->getValue();
+}
+
 std::string BooleanValue::toString() const {
     return value ? "#t" : "#f";
+}
+
+bool BooleanValue::getValue() const {
+    return value;
 }
 
 std::string NumericValue::toString() const {
@@ -83,6 +109,10 @@ std::string StringValue::toString() const {
     std::ostringstream oss;
     oss << std::quoted(value);
     return oss.str();
+}
+
+std::string StringValue::getValue() const {
+    return value;
 }
 
 std::string NilValue::toString() const {
@@ -111,6 +141,13 @@ std::string PairValue::toStringPure() const {
 
 std::string PairValue::toString() const {
     return "(" + toStringPure() + ")";
+}
+
+void PairValue::setRight(std::shared_ptr<Value> value) {
+    right = value;
+}
+void PairValue::setLeft(std::shared_ptr<Value> value) {
+    left = value;
 }
 
 ValuePtr ListValue::operator[](size_t index) const {
@@ -147,4 +184,18 @@ BuiltinFuncType* BuiltinProcValue::getFunc() const {
 
 std::string LambdaValue::toString() const {
     return "#procedure";
+}
+
+bool LambdaValue::isProcedure() const {
+    return true;
+}
+
+ValuePtr LambdaValue::apply(const std::vector<ValuePtr>& args) {
+    auto lambdaEnv =
+        definingEnv->createChild(params, args);  // 创建新的求值环境
+    ValuePtr lastEvalResult = std::make_shared<NilValue>();  // 默认返回值
+    for (auto& expr : body) {
+        lastEvalResult = lambdaEnv->eval(expr);  // 在新环境中求值每个表达式
+    }
+    return lastEvalResult;  // 返回最后一个表达式的求值结果
 }

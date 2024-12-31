@@ -43,8 +43,8 @@ ValuePtr defineForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
         }
 
         std::vector<ValuePtr> lambdaBody(args.begin() + 1, args.end());
-        ValuePtr lambdaValue =
-            std::make_shared<LambdaValue>(lambdaArgs, lambdaBody,env.shared_from_this());
+        ValuePtr lambdaValue = std::make_shared<LambdaValue>(
+            lambdaArgs, lambdaBody, env.shared_from_this());
         env.symbolTable[*funcName] = lambdaValue;
 
         // return lambdaValue;
@@ -58,6 +58,27 @@ ValuePtr defineForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
             throw LispError("Unimplemented");
         }
     }
+}
+
+ValuePtr lambdaForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
+    if (args.size() < 2) {
+        throw LispError("lambda form requires at least 2 arguments");
+    }
+    // 第一个参数应该是参数列表
+    auto paramsVec = args[0]->toVector();
+    std::vector<std::string> params;
+    for (const auto& param : paramsVec) {
+        if (auto symbol = param->asSymbol()) {
+            params.push_back(*symbol);
+        } else {
+            throw LispError("Lambda parameters must be symbols.");
+        }
+    }
+
+    // 第二个参数是函数体
+    std::vector<ValuePtr> body(args.begin() + 1, args.end());
+
+    return std::make_shared<LambdaValue>(params, body, env.shared_from_this());
 }
 
 ValuePtr quoteForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
@@ -144,27 +165,6 @@ ValuePtr orForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
         }
     }
     return std::make_shared<BooleanValue>(false);
-}
-
-ValuePtr lambdaForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
-    if (args.size() < 2) {
-        throw LispError("lambda form requires at least 2 arguments");
-    }
-    // 第一个参数应该是参数列表
-    auto paramsVec = args[0]->toVector();
-    std::vector<std::string> params;
-    for (const auto& param : paramsVec) {
-        if (auto symbol = param->asSymbol()) {
-            params.push_back(*symbol);
-        } else {
-            throw LispError("Lambda parameters must be symbols.");
-        }
-    }
-
-    // 第二个参数是函数体
-    std::vector<ValuePtr> body(args.begin() + 1, args.end());
-
-    return std::make_shared<LambdaValue>(params, body, env.shared_from_this());
 }
 
 ValuePtr condForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
