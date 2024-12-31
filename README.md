@@ -1,6 +1,10 @@
-# `Mini-Lisp` 脚手架
+# mini_lisp
 
-## 准备步骤
+> 2024软件设计实践课程的大作业，使用C/C++实现一个mini_lisp
+
+## `Mini-Lisp` 脚手架
+
+### 准备步骤
 
 - 使用 [VS Code Config Helper v4](https://v4.vscch.tk) 配置一遍。这只是确保你正确安装了编译器。
   - 如果你确定你安装了相关编译器，或者之前配置过，则可以跳过这一步。
@@ -12,7 +16,7 @@
 - 通过 VS Code 打开本文件夹后，呼出命令面板（Ctrl/Cmd + Shift + P），执行 `Tasks: Run task...` 中的 `configure` 任务。
 - 安装 CMake Tools 扩展后，重新加载窗口以生成智能提示。如果你安装了 Clangd 及其 VS Code 扩展，则按照 `.vscode/c_cpp_properties.json` 中的注释进行操作。
 
-## 编译、运行与调试
+### 编译、运行与调试
 
 - 按 Ctrl + Shift + B 编译项目。按 F6（即你在 VS Code Config Helper 中选择的运行快捷键）运行项目。
 - 按 F5 调试项目。
